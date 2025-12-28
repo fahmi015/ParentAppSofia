@@ -95,25 +95,43 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
                         </a>
                     ))}
                 </div>
-            )}
+            )} 
 
             {/* Attachments/Images */}
             {activity.images && activity.images.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
                     {activity.images.map((img, idx) => {
-                        const isImage = img.mime_type.startsWith('image/');
+                        if (!img.original_url) return null;
+                        
+                        const isImage = img.mime_type?.startsWith('image/');
                         const isPdf = img.mime_type === 'application/pdf';
-                        const isWord = img.mime_type.includes('wordprocessingml');
+                        const isWord = img.mime_type?.includes('wordprocessingml');
+
+                        // Construct full URL if relative
+                        let fullUrl = img.original_url;
+                        if (!fullUrl.startsWith('http://') && !fullUrl.startsWith('https://')) {
+                            // If it starts with /, prepend domain, otherwise prepend domain/
+                            fullUrl = `https://api.sofia-sahara.com${fullUrl.startsWith('/') ? '' : '/'}${fullUrl}`;
+                        }
 
                         if (isImage) {
                             return (
-                                <a key={idx} href={img.original_url} target="_blank" rel="noopener noreferrer" className="block relative h-48 w-full">
+                                <a key={idx} href={fullUrl} target="_blank" rel="noopener noreferrer" className="block relative h-48 w-full">
                                     <Image
-                                        src={img.original_url}
+                                        src={fullUrl}
                                         alt="Attachment"
                                         fill
                                         style={{ objectFit: 'cover' }}
                                         className="rounded-md border border-gray-200"
+                                        unoptimized
+                                        onError={(e) => {
+                                            // Fallback to regular img if Image component fails
+                                            const target = e.target as HTMLImageElement;
+                                            const parent = target.parentElement;
+                                            if (parent) {
+                                                parent.innerHTML = `<img src="${fullUrl}" alt="Attachment" class="w-full h-full object-cover rounded-md border border-gray-200" />`;
+                                            }
+                                        }}
                                     />
                                 </a>
                             );
@@ -122,7 +140,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
                         return (
                             <a
                                 key={idx}
-                                href={img.original_url}
+                                href={fullUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center p-4 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"

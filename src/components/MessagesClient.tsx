@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getMessages, getMessageRecipients, sendMessage } from '@/app/actions';
-import { Loader2, Send, Inbox, Mail, CheckCircle, Reply } from 'lucide-react';
+import { Loader2, Send, Inbox, Mail, CheckCircle, Reply, User } from 'lucide-react';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 
